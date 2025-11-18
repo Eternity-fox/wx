@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打印价格计算器 - 比价功能</title>
+    <title>打印价格计算器</title>
     <style>
         * {
             margin: 0;
@@ -272,6 +272,16 @@
                 border-bottom: none;
             }
 
+        /* 优惠模式特殊样式 */
+        .discount-mode .price-info {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .discount-mode .result {
+            background: linear-gradient(to right, #ff9800, #f57c00);
+        }
+
         @media (max-width: 600px) {
             .mode-selector {
                 flex-direction: column;
@@ -295,8 +305,8 @@
     </style>
 </head>
 <body>
-    <!-- 主计算器页面 -->
-    <div class="page active" id="calculator-page">
+    <!-- 普通模式页面 -->
+    <div class="page active" id="normal-page">
         <h1>打印价格计算器</h1>
 
         <div class="price-info">
@@ -313,24 +323,24 @@
             <!-- 单面打印输入区域 -->
             <div class="input-group single-input">
                 <label for="single-pages">打印页数</label>
-                <input type="number" id="single-pages" min="1" placeholder="请输入页数">
+                <input type="text" id="single-pages" placeholder="请输入页数">
             </div>
 
             <!-- 双面打印输入区域 -->
             <div class="input-group double-input" style="display: none;">
                 <label for="double-pages">打印页数</label>
-                <input type="number" id="double-pages" min="1" placeholder="请输入页数">
+                <input type="text" id="double-pages" placeholder="请输入页数">
             </div>
 
             <!-- 混合打印输入区域 -->
             <div class="mixed-inputs mixed-input" style="display: none;">
                 <div class="input-group">
                     <label for="mixed-single">单面页数</label>
-                    <input type="number" id="mixed-single" min="0" placeholder="单面页数">
+                    <input type="text" id="mixed-single" placeholder="单面页数">
                 </div>
                 <div class="input-group">
                     <label for="mixed-double">双面页数</label>
-                    <input type="number" id="mixed-double" min="0" placeholder="双面页数">
+                    <input type="text" id="mixed-double" placeholder="双面页数">
                 </div>
             </div>
 
@@ -370,24 +380,24 @@
             <!-- 单面打印输入区域 -->
             <div class="input-group single-input">
                 <label for="comparison-single-pages">打印页数</label>
-                <input type="number" id="comparison-single-pages" min="1" placeholder="请输入页数">
+                <input type="text" id="comparison-single-pages" placeholder="请输入页数">
             </div>
 
             <!-- 双面打印输入区域 -->
             <div class="input-group double-input" style="display: none;">
                 <label for="comparison-double-pages">打印页数</label>
-                <input type="number" id="comparison-double-pages" min="1" placeholder="请输入页数">
+                <input type="text" id="comparison-double-pages" placeholder="请输入页数">
             </div>
 
             <!-- 混合打印输入区域 -->
             <div class="mixed-inputs mixed-input" style="display: none;">
                 <div class="input-group">
                     <label for="comparison-mixed-single">单面页数</label>
-                    <input type="number" id="comparison-mixed-single" min="0" placeholder="单面页数">
+                    <input type="text" id="comparison-mixed-single" placeholder="单面页数">
                 </div>
                 <div class="input-group">
                     <label for="comparison-mixed-double">双面页数</label>
-                    <input type="number" id="comparison-mixed-double" min="0" placeholder="双面页数">
+                    <input type="text" id="comparison-mixed-double" placeholder="双面页数">
                 </div>
             </div>
 
@@ -395,6 +405,51 @@
         </div>
 
         <div class="comparison-result" id="comparison-page-result"></div>
+    </div>
+
+    <!-- 优惠模式页面 -->
+    <div class="page discount-mode" id="discount-page">
+        <h1>打印价格计算器</h1>
+
+        <div class="price-info">
+            单面打印: <span>0.06元/面</span> | 双面打印: <span>0.04元/面</span>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="single">单面打印</button>
+            <button class="mode-btn" data-mode="double">双面打印</button>
+            <button class="mode-btn" data-mode="mixed">混合打印</button>
+        </div>
+
+        <div class="input-section">
+            <!-- 单面打印输入区域 -->
+            <div class="input-group single-input">
+                <label for="discount-single-pages">打印页数</label>
+                <input type="number" id="discount-single-pages" min="1" placeholder="请输入页数">
+            </div>
+
+            <!-- 双面打印输入区域 -->
+            <div class="input-group double-input" style="display: none;">
+                <label for="discount-double-pages">打印页数</label>
+                <input type="number" id="discount-double-pages" min="1" placeholder="请输入页数">
+            </div>
+
+            <!-- 混合打印输入区域 -->
+            <div class="mixed-inputs mixed-input" style="display: none;">
+                <div class="input-group">
+                    <label for="discount-mixed-single">单面页数</label>
+                    <input type="number" id="discount-mixed-single" min="0" placeholder="单面页数">
+                </div>
+                <div class="input-group">
+                    <label for="discount-mixed-double">双面页数</label>
+                    <input type="number" id="discount-mixed-double" min="0" placeholder="双面页数">
+                </div>
+            </div>
+
+            <button class="btn-calculate" id="discount-calculate-btn">计算价格</button>
+        </div>
+
+        <div class="result" id="discount-result"></div>
     </div>
 
     <!-- 页面切换按钮 -->
@@ -406,10 +461,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // 价格常量
-            const CURRENT_SHOP = {
-                name: "当前打印店",
+            const NORMAL_PRICES = {
                 single: 0.15,
                 double: 0.10
+            };
+
+            const DISCOUNT_PRICES = {
+                single: 0.06,
+                double: 0.04
             };
 
             const OTHER_SHOPS = [
@@ -425,16 +484,20 @@
                 }
             ];
 
+            // 暗号列表
+            const SECRET_CODES = ["mkq", "zzj", "jxy", "zzr"];
+
             // 页面元素
-            const calculatorPage = document.getElementById('calculator-page');
+            const normalPage = document.getElementById('normal-page');
             const comparisonPage = document.getElementById('comparison-page');
+            const discountPage = document.getElementById('discount-page');
             const pageToggle = document.getElementById('page-toggle');
 
-            // 主页面功能
-            const modeBtns = document.querySelectorAll('#calculator-page .mode-btn');
-            const singleInput = calculatorPage.querySelector('.single-input');
-            const doubleInput = calculatorPage.querySelector('.double-input');
-            const mixedInput = calculatorPage.querySelector('.mixed-input');
+            // 普通页面功能
+            const normalModeBtns = document.querySelectorAll('#normal-page .mode-btn');
+            const normalSingleInput = normalPage.querySelector('.single-input');
+            const normalDoubleInput = normalPage.querySelector('.double-input');
+            const normalMixedInput = normalPage.querySelector('.mixed-input');
             const calculateBtn = document.getElementById('calculate-btn');
             const resultDiv = document.getElementById('result');
             const comparisonResultDiv = document.getElementById('comparison-result');
@@ -447,23 +510,36 @@
             const comparisonCalculateBtn = document.getElementById('comparison-calculate-btn');
             const comparisonPageResult = document.getElementById('comparison-page-result');
 
-            // 主页面模式切换
-            modeBtns.forEach(btn => {
+            // 优惠页面元素
+            const discountModeBtns = document.querySelectorAll('#discount-page .mode-btn');
+            const discountSingleInput = discountPage.querySelector('.single-input');
+            const discountDoubleInput = discountPage.querySelector('.double-input');
+            const discountMixedInput = discountPage.querySelector('.mixed-input');
+            const discountCalculateBtn = document.getElementById('discount-calculate-btn');
+            const discountResultDiv = document.getElementById('discount-result');
+
+            // 检查是否为暗号
+            function isSecretCode(input) {
+                return SECRET_CODES.includes(input.toLowerCase());
+            }
+
+            // 普通页面模式切换
+            normalModeBtns.forEach(btn => {
                 btn.addEventListener('click', function () {
-                    modeBtns.forEach(b => b.classList.remove('active'));
+                    normalModeBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
 
-                    singleInput.style.display = 'none';
-                    doubleInput.style.display = 'none';
-                    mixedInput.style.display = 'none';
+                    normalSingleInput.style.display = 'none';
+                    normalDoubleInput.style.display = 'none';
+                    normalMixedInput.style.display = 'none';
 
                     const mode = this.getAttribute('data-mode');
                     if (mode === 'single') {
-                        singleInput.style.display = 'block';
+                        normalSingleInput.style.display = 'block';
                     } else if (mode === 'double') {
-                        doubleInput.style.display = 'block';
+                        normalDoubleInput.style.display = 'block';
                     } else if (mode === 'mixed') {
-                        mixedInput.style.display = 'flex';
+                        normalMixedInput.style.display = 'flex';
                     }
 
                     resultDiv.style.display = 'none';
@@ -471,37 +547,64 @@
                 });
             });
 
-            // 主页面计算价格
+            // 普通页面计算价格
             calculateBtn.addEventListener('click', function () {
-                const activeMode = calculatorPage.querySelector('.mode-btn.active').getAttribute('data-mode');
+                const activeMode = normalPage.querySelector('.mode-btn.active').getAttribute('data-mode');
                 let totalPrice = 0;
                 let pages = 0;
                 let singlePages = 0;
                 let doublePages = 0;
 
+                // 检查是否输入了暗号
                 if (activeMode === 'single') {
-                    singlePages = parseInt(document.getElementById('single-pages').value);
+                    const input = document.getElementById('single-pages').value.trim();
+                    if (!input) {
+                        alert('请输入页数！');
+                        return;
+                    }
+
+                    // 如果是暗号，切换到优惠模式
+                    if (isSecretCode(input)) {
+                        switchToDiscountMode();
+                        return;
+                    }
+
+                    singlePages = parseInt(input);
                     if (isNaN(singlePages) || singlePages < 1) {
                         alert('请输入有效的页数！');
                         return;
                     }
-                    totalPrice = singlePages * CURRENT_SHOP.single;
+                    totalPrice = singlePages * NORMAL_PRICES.single;
                     pages = singlePages;
                     resultDiv.innerHTML = `单面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
                 }
                 else if (activeMode === 'double') {
-                    doublePages = parseInt(document.getElementById('double-pages').value);
+                    const input = document.getElementById('double-pages').value.trim();
+                    if (!input) {
+                        alert('请输入页数！');
+                        return;
+                    }
+
+                    doublePages = parseInt(input);
                     if (isNaN(doublePages) || doublePages < 1) {
                         alert('请输入有效的页数！');
                         return;
                     }
-                    totalPrice = doublePages * CURRENT_SHOP.double;
+                    totalPrice = doublePages * NORMAL_PRICES.double;
                     pages = doublePages;
                     resultDiv.innerHTML = `双面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
                 }
                 else if (activeMode === 'mixed') {
-                    singlePages = parseInt(document.getElementById('mixed-single').value) || 0;
-                    doublePages = parseInt(document.getElementById('mixed-double').value) || 0;
+                    const singleInput = document.getElementById('mixed-single').value.trim();
+                    const doubleInput = document.getElementById('mixed-double').value.trim();
+
+                    if (!singleInput && !doubleInput) {
+                        alert('请输入至少一种打印类型的页数！');
+                        return;
+                    }
+
+                    singlePages = parseInt(singleInput) || 0;
+                    doublePages = parseInt(doubleInput) || 0;
 
                     if (singlePages < 0 || doublePages < 0) {
                         alert('页数不能为负数！');
@@ -513,7 +616,7 @@
                         return;
                     }
 
-                    totalPrice = (singlePages * CURRENT_SHOP.single) + (doublePages * CURRENT_SHOP.double);
+                    totalPrice = (singlePages * NORMAL_PRICES.single) + (doublePages * NORMAL_PRICES.double);
                     pages = singlePages + doublePages;
                     resultDiv.innerHTML = `混合打印: ${singlePages} 页单面 + ${doublePages} 页双面，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
                 }
@@ -586,10 +689,83 @@
                 showComparisonResult(singlePages, doublePages, activeMode, comparisonPageResult, true);
             });
 
+            // 优惠页面模式切换
+            discountModeBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    discountModeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    discountSingleInput.style.display = 'none';
+                    discountDoubleInput.style.display = 'none';
+                    discountMixedInput.style.display = 'none';
+
+                    const mode = this.getAttribute('data-mode');
+                    if (mode === 'single') {
+                        discountSingleInput.style.display = 'block';
+                    } else if (mode === 'double') {
+                        discountDoubleInput.style.display = 'block';
+                    } else if (mode === 'mixed') {
+                        discountMixedInput.style.display = 'flex';
+                    }
+
+                    discountResultDiv.style.display = 'none';
+                });
+            });
+
+            // 优惠页面计算价格
+            discountCalculateBtn.addEventListener('click', function () {
+                const activeMode = discountPage.querySelector('.mode-btn.active').getAttribute('data-mode');
+                let totalPrice = 0;
+                let pages = 0;
+                let singlePages = 0;
+                let doublePages = 0;
+
+                if (activeMode === 'single') {
+                    singlePages = parseInt(document.getElementById('discount-single-pages').value);
+                    if (isNaN(singlePages) || singlePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                    totalPrice = singlePages * DISCOUNT_PRICES.single;
+                    pages = singlePages;
+                    discountResultDiv.innerHTML = `单面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+                else if (activeMode === 'double') {
+                    doublePages = parseInt(document.getElementById('discount-double-pages').value);
+                    if (isNaN(doublePages) || doublePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                    totalPrice = doublePages * DISCOUNT_PRICES.double;
+                    pages = doublePages;
+                    discountResultDiv.innerHTML = `双面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+                else if (activeMode === 'mixed') {
+                    singlePages = parseInt(document.getElementById('discount-mixed-single').value) || 0;
+                    doublePages = parseInt(document.getElementById('discount-mixed-double').value) || 0;
+
+                    if (singlePages < 0 || doublePages < 0) {
+                        alert('页数不能为负数！');
+                        return;
+                    }
+
+                    if (singlePages === 0 && doublePages === 0) {
+                        alert('请输入至少一种打印类型的页数！');
+                        return;
+                    }
+
+                    totalPrice = (singlePages * DISCOUNT_PRICES.single) + (doublePages * DISCOUNT_PRICES.double);
+                    pages = singlePages + doublePages;
+                    discountResultDiv.innerHTML = `混合打印: ${singlePages} 页单面 + ${doublePages} 页双面，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+
+                discountResultDiv.style.display = 'block';
+            });
+
             // 显示比价结果的函数
             function showComparisonResult(singlePages, doublePages, mode, resultElement, isComparisonPage = false) {
                 // 计算当前打印店价格
-                const currentPrice = (singlePages * CURRENT_SHOP.single) + (doublePages * CURRENT_SHOP.double);
+                const currentPrice = (singlePages * NORMAL_PRICES.single) + (doublePages * NORMAL_PRICES.double);
 
                 // 计算其他打印店价格
                 const otherPrices = OTHER_SHOPS.map(shop => {
@@ -609,7 +785,7 @@
                 }
 
                 let resultHTML = `<div class="price-comparison">
-                        <div class="current-price">${CURRENT_SHOP.name}: ${currentPrice.toFixed(2)} 元</div>`;
+                        <div class="current-price">当前打印店: ${currentPrice.toFixed(2)} 元</div>`;
 
                 otherPrices.forEach(shop => {
                     resultHTML += `<div class="other-price">
@@ -628,17 +804,52 @@
                 resultElement.style.display = 'block';
             }
 
-            // 页面切换功能
+            // 切换到优惠模式
+            function switchToDiscountMode() {
+                normalPage.classList.remove('active');
+                comparisonPage.classList.remove('active');
+                discountPage.classList.add('active');
+                pageToggle.innerHTML = '<i>↩️</i><span>返回普通模式</span>';
+
+                // 更改页面切换按钮的功能
+                pageToggle.onclick = function () {
+                    switchToNormalMode();
+                };
+            }
+
+            // 切换到普通模式
+            function switchToNormalMode() {
+                discountPage.classList.remove('active');
+                comparisonPage.classList.remove('active');
+                normalPage.classList.add('active');
+                pageToggle.innerHTML = '<i>⚖️</i><span>比价功能</span>';
+
+                // 恢复页面切换按钮的功能
+                pageToggle.onclick = function () {
+                    if (normalPage.classList.contains('active')) {
+                        normalPage.classList.remove('active');
+                        comparisonPage.classList.add('active');
+                        pageToggle.innerHTML = '<i>↩️</i><span>返回计算器</span>';
+                    } else {
+                        comparisonPage.classList.remove('active');
+                        normalPage.classList.add('active');
+                        pageToggle.innerHTML = '<i>⚖️</i><span>比价功能</span>';
+                    }
+                };
+
+                // 清空输入框
+                document.getElementById('single-pages').value = '';
+            }
+
+            // 页面切换功能（普通和比价页面）
             pageToggle.addEventListener('click', function () {
-                if (calculatorPage.classList.contains('active')) {
-                    // 切换到比价页面
-                    calculatorPage.classList.remove('active');
+                if (normalPage.classList.contains('active')) {
+                    normalPage.classList.remove('active');
                     comparisonPage.classList.add('active');
                     pageToggle.innerHTML = '<i>↩️</i><span>返回计算器</span>';
                 } else {
-                    // 切换到计算器页面
                     comparisonPage.classList.remove('active');
-                    calculatorPage.classList.add('active');
+                    normalPage.classList.add('active');
                     pageToggle.innerHTML = '<i>⚖️</i><span>比价功能</span>';
                 }
             });
