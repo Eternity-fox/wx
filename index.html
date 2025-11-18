@@ -1,1 +1,682 @@
-wxp://f2f0xC_p1tJ7oM8aWZpm61QsEnxg8UkiSySUsR5YyGPba43Eay72I3Lz9g0rnwFJ8T8x
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打印价格计算器 - 比价功能</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 2.2rem;
+        }
+
+        .price-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            color: #495057;
+        }
+
+            .price-info span {
+                font-weight: bold;
+                color: #e74c3c;
+            }
+
+        .mode-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px 10px;
+            background-color: #f1f3f4;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+
+            .mode-btn:hover {
+                background-color: #e9ecef;
+                transform: translateY(-3px);
+            }
+
+            .mode-btn.active {
+                background-color: #3498db;
+                color: white;
+                box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            }
+
+        .input-section {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+            .input-group:last-child {
+                margin-bottom: 0;
+            }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+            input:focus {
+                border-color: #3498db;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            }
+
+        .btn-calculate {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+            .btn-calculate:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .comparison-result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            border-left: 5px solid #3498db;
+        }
+
+        .price-comparison {
+            margin-top: 15px;
+        }
+
+        .current-price {
+            font-size: 1.5rem;
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .other-price {
+            font-size: 1rem;
+            color: #e74c3c;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+            .other-price span:first-child {
+                font-weight: 500;
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mixed-inputs {
+            display: flex;
+            gap: 15px;
+        }
+
+            .mixed-inputs .input-group {
+                flex: 1;
+            }
+
+        /* 比价小组件样式 */
+        .comparison-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .comparison-widget:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+                background: #3498db;
+            }
+
+            .comparison-widget i {
+                font-size: 1.2rem;
+            }
+
+        /* 比价页面样式 */
+        .comparison-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .comparison-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s;
+        }
+
+            .close-btn:hover {
+                color: #e74c3c;
+            }
+
+        .shop-prices {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .shop-price {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .shop-price:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+        @media (max-width: 600px) {
+            .mode-selector {
+                flex-direction: column;
+            }
+
+            .mixed-inputs {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .comparison-widget {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主计算器页面 -->
+    <div class="container">
+        <h1>打印价格计算器</h1>
+
+        <div class="price-info">
+            单面打印: <span>0.15元/面</span> | 双面打印: <span>0.10元/面</span>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="single">单面打印</button>
+            <button class="mode-btn" data-mode="double">双面打印</button>
+            <button class="mode-btn" data-mode="mixed">混合打印</button>
+        </div>
+
+        <div class="input-section">
+            <!-- 单面打印输入区域 -->
+            <div class="input-group single-input">
+                <label for="single-pages">打印页数</label>
+                <input type="number" id="single-pages" min="1" placeholder="请输入页数">
+            </div>
+
+            <!-- 双面打印输入区域 -->
+            <div class="input-group double-input" style="display: none;">
+                <label for="double-pages">打印页数</label>
+                <input type="number" id="double-pages" min="1" placeholder="请输入页数">
+            </div>
+
+            <!-- 混合打印输入区域 -->
+            <div class="mixed-inputs mixed-input" style="display: none;">
+                <div class="input-group">
+                    <label for="mixed-single">单面页数</label>
+                    <input type="number" id="mixed-single" min="0" placeholder="单面页数">
+                </div>
+                <div class="input-group">
+                    <label for="mixed-double">双面页数</label>
+                    <input type="number" id="mixed-double" min="0" placeholder="双面页数">
+                </div>
+            </div>
+
+            <button class="btn-calculate" id="calculate-btn">计算价格</button>
+        </div>
+
+        <div class="result" id="result"></div>
+        <div class="comparison-result" id="comparison-result"></div>
+    </div>
+
+    <!-- 比价小组件 -->
+    <div class="comparison-widget" id="comparison-widget">
+        <i>⚖️</i>
+        <span>比价功能</span>
+    </div>
+
+    <!-- 比价页面 -->
+    <div class="comparison-page" id="comparison-page">
+        <div class="comparison-container">
+            <button class="close-btn" id="close-comparison">×</button>
+            <h1>打印价格比价</h1>
+
+            <div class="price-info">
+                当前打印店: <span>单面0.15元/面 | 双面0.10元/面</span>
+            </div>
+
+            <div class="shop-prices">
+                <div class="shop-price">
+                    <span>云印社（打印店）</span>
+                    <span>单面0.35元/面 | 双面0.20元/面</span>
+                </div>
+                <div class="shop-price">
+                    <span>飞登云印（宿舍楼下）</span>
+                    <span>单面0.22元/面 | 双面0.165元/面</span>
+                </div>
+            </div>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="single">单面打印</button>
+                <button class="mode-btn" data-mode="double">双面打印</button>
+                <button class="mode-btn" data-mode="mixed">混合打印</button>
+            </div>
+
+            <div class="input-section">
+                <!-- 单面打印输入区域 -->
+                <div class="input-group single-input">
+                    <label for="comparison-single-pages">打印页数</label>
+                    <input type="number" id="comparison-single-pages" min="1" placeholder="请输入页数">
+                </div>
+
+                <!-- 双面打印输入区域 -->
+                <div class="input-group double-input" style="display: none;">
+                    <label for="comparison-double-pages">打印页数</label>
+                    <input type="number" id="comparison-double-pages" min="1" placeholder="请输入页数">
+                </div>
+
+                <!-- 混合打印输入区域 -->
+                <div class="mixed-inputs mixed-input" style="display: none;">
+                    <div class="input-group">
+                        <label for="comparison-mixed-single">单面页数</label>
+                        <input type="number" id="comparison-mixed-single" min="0" placeholder="单面页数">
+                    </div>
+                    <div class="input-group">
+                        <label for="comparison-mixed-double">双面页数</label>
+                        <input type="number" id="comparison-mixed-double" min="0" placeholder="双面页数">
+                    </div>
+                </div>
+
+                <button class="btn-calculate" id="comparison-calculate-btn">比价计算</button>
+            </div>
+
+            <div class="comparison-result" id="comparison-page-result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 价格常量
+            const CURRENT_SHOP = {
+                name: "当前打印店",
+                single: 0.15,
+                double: 0.10
+            };
+
+            const OTHER_SHOPS = [
+                {
+                    name: "云印社（打印店）",
+                    single: 0.35,
+                    double: 0.20
+                },
+                {
+                    name: "飞登云印（宿舍楼下）",
+                    single: 0.22,
+                    double: 0.165
+                }
+            ];
+
+            // 主页面功能
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            const singleInput = document.querySelector('.single-input');
+            const doubleInput = document.querySelector('.double-input');
+            const mixedInput = document.querySelector('.mixed-input');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultDiv = document.getElementById('result');
+            const comparisonResultDiv = document.getElementById('comparison-result');
+
+            // 比价页面元素
+            const comparisonWidget = document.getElementById('comparison-widget');
+            const comparisonPage = document.getElementById('comparison-page');
+            const closeComparison = document.getElementById('close-comparison');
+            const comparisonModeBtns = comparisonPage.querySelectorAll('.mode-btn');
+            const comparisonSingleInput = comparisonPage.querySelector('.single-input');
+            const comparisonDoubleInput = comparisonPage.querySelector('.double-input');
+            const comparisonMixedInput = comparisonPage.querySelector('.mixed-input');
+            const comparisonCalculateBtn = document.getElementById('comparison-calculate-btn');
+            const comparisonPageResult = document.getElementById('comparison-page-result');
+
+            // 主页面模式切换
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    modeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    singleInput.style.display = 'none';
+                    doubleInput.style.display = 'none';
+                    mixedInput.style.display = 'none';
+
+                    const mode = this.getAttribute('data-mode');
+                    if (mode === 'single') {
+                        singleInput.style.display = 'block';
+                    } else if (mode === 'double') {
+                        doubleInput.style.display = 'block';
+                    } else if (mode === 'mixed') {
+                        mixedInput.style.display = 'flex';
+                    }
+
+                    resultDiv.style.display = 'none';
+                    comparisonResultDiv.style.display = 'none';
+                });
+            });
+
+            // 主页面计算价格
+            calculateBtn.addEventListener('click', function () {
+                const activeMode = document.querySelector('.mode-btn.active').getAttribute('data-mode');
+                let totalPrice = 0;
+                let pages = 0;
+                let singlePages = 0;
+                let doublePages = 0;
+
+                if (activeMode === 'single') {
+                    singlePages = parseInt(document.getElementById('single-pages').value);
+                    if (isNaN(singlePages) || singlePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                    totalPrice = singlePages * CURRENT_SHOP.single;
+                    pages = singlePages;
+                    resultDiv.innerHTML = `单面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+                else if (activeMode === 'double') {
+                    doublePages = parseInt(document.getElementById('double-pages').value);
+                    if (isNaN(doublePages) || doublePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                    totalPrice = doublePages * CURRENT_SHOP.double;
+                    pages = doublePages;
+                    resultDiv.innerHTML = `双面打印 ${pages} 页，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+                else if (activeMode === 'mixed') {
+                    singlePages = parseInt(document.getElementById('mixed-single').value) || 0;
+                    doublePages = parseInt(document.getElementById('mixed-double').value) || 0;
+
+                    if (singlePages < 0 || doublePages < 0) {
+                        alert('页数不能为负数！');
+                        return;
+                    }
+
+                    if (singlePages === 0 && doublePages === 0) {
+                        alert('请输入至少一种打印类型的页数！');
+                        return;
+                    }
+
+                    totalPrice = (singlePages * CURRENT_SHOP.single) + (doublePages * CURRENT_SHOP.double);
+                    pages = singlePages + doublePages;
+                    resultDiv.innerHTML = `混合打印: ${singlePages} 页单面 + ${doublePages} 页双面，总计: <span style="font-size: 1.5em;">${totalPrice.toFixed(2)}</span> 元`;
+                }
+
+                resultDiv.style.display = 'block';
+
+                // 显示比价结果
+                showComparisonResult(singlePages, doublePages, activeMode, comparisonResultDiv);
+            });
+
+            // 比价页面模式切换
+            comparisonModeBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    comparisonModeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    comparisonSingleInput.style.display = 'none';
+                    comparisonDoubleInput.style.display = 'none';
+                    comparisonMixedInput.style.display = 'none';
+
+                    const mode = this.getAttribute('data-mode');
+                    if (mode === 'single') {
+                        comparisonSingleInput.style.display = 'block';
+                    } else if (mode === 'double') {
+                        comparisonDoubleInput.style.display = 'block';
+                    } else if (mode === 'mixed') {
+                        comparisonMixedInput.style.display = 'flex';
+                    }
+
+                    comparisonPageResult.style.display = 'none';
+                });
+            });
+
+            // 比价页面计算
+            comparisonCalculateBtn.addEventListener('click', function () {
+                const activeMode = comparisonPage.querySelector('.mode-btn.active').getAttribute('data-mode');
+                let singlePages = 0;
+                let doublePages = 0;
+
+                if (activeMode === 'single') {
+                    singlePages = parseInt(document.getElementById('comparison-single-pages').value);
+                    if (isNaN(singlePages) || singlePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                }
+                else if (activeMode === 'double') {
+                    doublePages = parseInt(document.getElementById('comparison-double-pages').value);
+                    if (isNaN(doublePages) || doublePages < 1) {
+                        alert('请输入有效的页数！');
+                        return;
+                    }
+                }
+                else if (activeMode === 'mixed') {
+                    singlePages = parseInt(document.getElementById('comparison-mixed-single').value) || 0;
+                    doublePages = parseInt(document.getElementById('comparison-mixed-double').value) || 0;
+
+                    if (singlePages < 0 || doublePages < 0) {
+                        alert('页数不能为负数！');
+                        return;
+                    }
+
+                    if (singlePages === 0 && doublePages === 0) {
+                        alert('请输入至少一种打印类型的页数！');
+                        return;
+                    }
+                }
+
+                // 显示比价结果
+                showComparisonResult(singlePages, doublePages, activeMode, comparisonPageResult, true);
+            });
+
+            // 显示比价结果的函数
+            function showComparisonResult(singlePages, doublePages, mode, resultElement, isComparisonPage = false) {
+                // 计算当前打印店价格
+                const currentPrice = (singlePages * CURRENT_SHOP.single) + (doublePages * CURRENT_SHOP.double);
+
+                // 计算其他打印店价格
+                const otherPrices = OTHER_SHOPS.map(shop => {
+                    return {
+                        name: shop.name,
+                        price: (singlePages * shop.single) + (doublePages * shop.double)
+                    };
+                });
+
+                let modeText = "";
+                if (mode === 'single') {
+                    modeText = `单面打印 ${singlePages} 页`;
+                } else if (mode === 'double') {
+                    modeText = `双面打印 ${doublePages} 页`;
+                } else {
+                    modeText = `混合打印: ${singlePages} 页单面 + ${doublePages} 页双面`;
+                }
+
+                let resultHTML = `<div class="price-comparison">
+                        <div class="current-price">${CURRENT_SHOP.name}: ${currentPrice.toFixed(2)} 元</div>`;
+
+                otherPrices.forEach(shop => {
+                    resultHTML += `<div class="other-price">
+                            <span>${shop.name}</span>
+                            <span>${shop.price.toFixed(2)} 元</span>
+                        </div>`;
+                });
+
+                resultHTML += `</div>`;
+
+                if (isComparisonPage) {
+                    resultHTML = `<div style="margin-bottom: 15px; font-weight: 500;">${modeText}</div>` + resultHTML;
+                }
+
+                resultElement.innerHTML = resultHTML;
+                resultElement.style.display = 'block';
+            }
+
+            // 打开比价页面
+            comparisonWidget.addEventListener('click', function () {
+                comparisonPage.style.display = 'flex';
+            });
+
+            // 关闭比价页面
+            closeComparison.addEventListener('click', function () {
+                comparisonPage.style.display = 'none';
+            });
+
+            // 点击比价页面外部关闭
+            comparisonPage.addEventListener('click', function (e) {
+                if (e.target === comparisonPage) {
+                    comparisonPage.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
